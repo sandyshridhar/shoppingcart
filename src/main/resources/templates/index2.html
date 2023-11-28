@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Index</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link th:href="@{/style.css}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+</head>
+<body style="background-color:#f1f1f1">
+
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Logo</a>
+        </div>
+        <div class="collapse navbar-collapse" id="myNavbar">
+            <ul class="nav navbar-nav">
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid text-center">
+    <div class="row content"><br>
+        <div class="col-sm-2 sidenav">
+        </div>
+        <div class="col-sm-8 text-left" style="background-color:white">
+            <div class="col-sm-1">
+            </div>
+            <div class="col-sm-10" >
+                <div th:if!="${allproduct.isEmpty()}">
+                    <div class="col-sm-4" th:each="p:${allproduct}">
+                        <div class="card" >
+                            <img th:src="@{images/bag.jpg;base64}" alt="Bag's" style="width:100%">
+                            <h3 th:text="${p.p_name}"></h3>
+                            <p class="price" th:text="${p.p_price}"></p>
+                            <!--                            <p>Qty:<span th:text="${p.p_qty}"></span></p>-->
+                            <br>
+                            <p><a th:href="@{/addtocart/{id}(id=${p.id})}"><button class="btn btn-info btn-xs">Add to Cart</button></a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${allproduct.isEmpty()}">
+                <h2>Sorry:(  No items are available at...</h2>
+            </div>
+            <div class="col-sm-1">
+            </div>
+        </div>
+        <div class="col-sm-2 sidenav">
+        </div>
+    </div>
+</div>
+
+<footer class="container-fluid text-center">
+    <p>Footer Text</p>
+</footer>
+
+</body>
+</html>
+var products = [];
+var cart = [];
+
+function addCart(product_id) {
+for (var i = 0; i < products.length; i++) {
+if (products[i].product_id == product_id) {
+var cartItem = null;
+for (var k = 0; k < cart.length; k++) {
+if (cart[k].product.product_id == products[i].product_id) {
+cartItem = cart[k];
+cart[k].product_qty++;
+break;
+}
+}
+if (cartItem == null) {
+var cartItem = {
+product: products[i],
+product_qty: products[i].product_qty
+};
+cart.push(cartItem);
+}
+}
+}
+<!--            renderCartTable();-->
+sessionStorage.setItem("myCart", JSON.stringify(cart));
+return true;
+}
+function renderCartTable() {
+var html = '';
+var ele = document.getElementById("demo2");
+ele.innerHTML = '';
+
+html += "<table id='tblCart' border='1|1'>";
+    html += "<tr><td>Product Name</td>";
+        html += "<td>Quantity</td>";
+        html += "<td>Price</td>";
+        html += "<td>Total</td>";
+        html += "<td>Action</td></tr>";
+    var GrandTotal = 0;
+    for (var i = 0; i < cart.length; i++) {
+    html += "<tr>";
+        html += "<td>" + cart[i].product.product_name + "</td>";
+        <!--            html += "<td> <input type='number' value='cart[i].product_qty' </td>";-->
+        html += "<td><button type='submit' onClick='subtractQuantity(\"" + cart[i].product.product_id + "\", this);'>-</button>" + cart[i].product_qty + "<button type='submit' onClick='addQuantity(\"" + cart[i].product.product_id + "\", this);'>+</button></td>";
+        html += "<td>" + cart[i].product.product_price + "</td>";
+        html += "<td>" + parseFloat(cart[i].product.product_price) * parseInt(cart[i].product_qty) + "</td>";
+        html += "<td><button type='submit' onClick='subtractQuantity(\"" + cart[i].product.product_id + "\", this);'/>Subtract Quantity</button> &nbsp<button type='submit' onClick='addQuantity(\"" + cart[i].product.product_id + "\", this);'/>Add Quantity</button> &nbsp<button type='submit' onClick='removeItem(\"" + cart[i].product.product_id + "\", this);'/>Remove Item</button></td>";
+        html += "</tr>";
+
+    GrandTotal += parseFloat(cart[i].product.product_price) * parseInt(cart[i].product_qty);
+
+    }
+    document.getElementById('demo3').innerHTML = GrandTotal;
+    html += "</table>";
+ele.innerHTML = html;
+sessionStorage.setItem("myCart", JSON.stringify(html));
+}
+
+function subtractQuantity(product_id)
+{
+for (var i = 0; i < cart.length; i++) {
+if (cart[i].product.product_id == product_id) {
+cart[i].product_qty--;
+}
+
+if (cart[i].product_qty == 0) {
+cart.splice(i,1);
+}
+}
+renderCartTable();
+}
+function addQuantity(product_id)
+{
+for (var i = 0; i < cart.length; i++) {
+if (cart[i].product.product_id == product_id) {
+cart[i].product_qty++;
+}
+}
+renderCartTable();
+}
